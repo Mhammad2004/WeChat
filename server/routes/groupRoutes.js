@@ -755,7 +755,91 @@ router.post(
   }
 );
 
+// ==========================================
+// DELETE A PARTICULAR MEMBER'S MESSAGES
+// ADMIN ONLY
+// ==========================================
 
+router.delete(
+  "/:groupId/messages/member/:memberId",
+  authenticate,
+  async (req, res) => {
+    try {
+      const { groupId, memberId } = req.params;
+      const currentUserId = req.user.id;
+
+      // Check group
+      const [groups] = await db.query(
+        `
+        SELECT owner_id
+        FROM chat_groups
+        WHERE id = ?
+        `,
+        [groupId]
+      );
+
+      if (groups.length === 0) {
+        return res.status(404).json({
+          message: "Group not found",
+        });
+      }
+
+      // Only admin can delete another member's messages
+      if (
+        Number(groups[0].owner_id) !==
+        Number(currentUserId)
+      ) {
+        return res.status(403).json({
+          message:
+            "Only the admin can delete member messages",
+        });
+      }
+
+      // Make sure target user is actually a group member
+      const [membership] = await db.query(
+        `
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+        `,
+        [groupId, memberId]
+      );
+
+      if (membership.length === 0) {
+        return res.status(404).json({
+          message: "User is not a member of this group",
+        });
+      }
+
+      // Delete only this member's messages
+      const [result] = await db.query(
+        `
+        DELETE FROM messages
+        WHERE group_id = ?
+        AND sender_id = ?
+        `,
+        [groupId, memberId]
+      );
+
+      res.json({
+        message: "Member's messages deleted successfully",
+        deletedCount: result.affectedRows,
+      });
+
+    } catch (error) {
+      console.error(
+        "Delete member messages error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Failed to delete member messages",
+      });
+    }
+  }
+);
 // ===============================
 // DELETE ENTIRE GROUP — ADMIN ONLY
 // ===============================
@@ -877,5 +961,76 @@ router.post(
   }
 );
 
+// ===============================
+// DELETE ALL GROUP MESSAGES — ADMIN ONLY
+// ===============================
+
+router.delete(
+  "/:groupId/messages",
+  authenticate,
+  async (req, res) => {
+    try {
+      const { groupId } = req.params;
+      const userId = req.user.id;
+
+      // Check group and admin
+      const [groups] = await db.query(
+        `
+        SELECT owner_id
+        FROM chat_groups
+        WHERE id = ?
+        `,
+        [groupId]
+      );
+
+      if (groups.length === 0) {
+        return res.status(404).json({
+          message: "Group not found"
+        });
+      }
+
+      if (
+        Number(groups[0].owner_id) !==
+        Number(userId)
+      ) {
+        return res.status(403).json({
+          message: "Only the admin can delete all messages"
+        });
+      }
+
+      // Delete every message belonging to this group
+      await db.query(
+        `
+        DELETE FROM messages
+        WHERE group_id = ?
+        `,
+        [groupId]
+      );
+
+      // Reset everyone's personal clear timestamp
+      await db.query(
+        `
+        DELETE FROM group_conversation_clears
+        WHERE group_id = ?
+        `,
+        [groupId]
+      );
+
+      res.json({
+        message: "All group messages deleted successfully"
+      });
+
+    } catch (error) {
+      console.error(
+        "Delete all group messages error:",
+        error
+      );
+
+      res.status(500).json({
+        message: "Failed to delete all group messages"
+      });
+    }
+  }
+);
 
 module.exports = router;

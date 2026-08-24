@@ -287,28 +287,83 @@ io.on("connection", (socket) => {
 
   socket.on("delete_message", async (messageId) => {
     try {
-      // Check that the message belongs to the logged-in user
+      // First find the message
       const [messages] = await db.query(
-        `SELECT *
-       FROM messages
-       WHERE id = ?
-       AND sender_id = ?`,
-        [messageId, socket.user.id]
+        `
+      SELECT *
+      FROM messages
+      WHERE id = ?
+      `,
+        [messageId]
       );
 
       if (messages.length === 0) {
-        console.log(
-          "Message not found or not owned by user"
-        );
+        console.log("Message not found");
         return;
       }
 
       const message = messages[0];
 
-      // Delete from MySQL
+      let canDelete = false;
+
+      // ==========================================
+      // 1. USER CAN DELETE THEIR OWN MESSAGE
+      // ==========================================
+
+      if (
+        Number(message.sender_id) ===
+        Number(socket.user.id)
+      ) {
+        canDelete = true;
+      }
+
+      // ==========================================
+      // 2. GROUP ADMIN CAN DELETE ANY GROUP MESSAGE
+      // ==========================================
+
+      if (
+        message.group_id &&
+        Number(message.group_id) > 0
+      ) {
+        const [groups] = await db.query(
+          `
+        SELECT owner_id
+        FROM chat_groups
+        WHERE id = ?
+        `,
+          [message.group_id]
+        );
+
+        if (
+          groups.length > 0 &&
+          Number(groups[0].owner_id) ===
+          Number(socket.user.id)
+        ) {
+          canDelete = true;
+        }
+      }
+
+      // ==========================================
+      // 3. DENY UNAUTHORIZED DELETE
+      // ==========================================
+
+      if (!canDelete) {
+        console.log(
+          `User ${socket.user.id} is not allowed to delete message ${messageId}`
+        );
+
+        return;
+      }
+
+      // ==========================================
+      // DELETE MESSAGE
+      // ==========================================
+
       await db.query(
-        `DELETE FROM messages
-       WHERE id = ?`,
+        `
+      DELETE FROM messages
+      WHERE id = ?
+      `,
         [messageId]
       );
 
@@ -321,23 +376,57 @@ io.on("connection", (socket) => {
         id: message.id,
         senderId: message.sender_id,
         recipientId: message.receiver_id,
+        groupId: message.group_id,
       };
 
-      // Tell sender
-      io.to(socket.id).emit(
-        "message_deleted",
-        deletedMessage
-      );
+      // ==========================================
+      // DIRECT MESSAGE
+      // ==========================================
 
-      // Tell recipient
-      const recipientSocketId =
-        onlineUsers.get(message.receiver_id);
-
-      if (recipientSocketId) {
-        io.to(recipientSocketId).emit(
+      if (!message.group_id) {
+        // Tell the person who deleted it
+        io.to(socket.id).emit(
           "message_deleted",
           deletedMessage
         );
+
+        // Tell the other person
+        const recipientSocketId =
+          onlineUsers.get(message.receiver_id);
+
+        if (recipientSocketId) {
+          io.to(recipientSocketId).emit(
+            "message_deleted",
+            deletedMessage
+          );
+        }
+
+        return;
+      }
+
+      // ==========================================
+      // GROUP MESSAGE
+      // ==========================================
+
+      const [groupMembers] = await db.query(
+        `
+      SELECT user_id
+      FROM group_members
+      WHERE group_id = ?
+      `,
+        [message.group_id]
+      );
+
+      for (const member of groupMembers) {
+        const memberSocketId =
+          onlineUsers.get(member.user_id);
+
+        if (memberSocketId) {
+          io.to(memberSocketId).emit(
+            "message_deleted",
+            deletedMessage
+          );
+        }
       }
 
     } catch (error) {
@@ -347,7 +436,6 @@ io.on("connection", (socket) => {
       );
     }
   });
-
   socket.on("clear_conversation", async (otherUserId) => {
     try {
       const userId = socket.user.id;
