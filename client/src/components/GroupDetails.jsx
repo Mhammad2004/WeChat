@@ -1,0 +1,336 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+function GroupDetails({
+  group,
+  user,
+  onClose,
+}) {
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [showAddMembers, setShowAddMembers] = useState(false);
+  const [selectedMember, setSelectedMember] = useState("");
+  const token = localStorage.getItem("token");
+
+  const loadGroupDetails = async () => {
+    try {
+      setLoading(true);
+
+      const response = await axios.get(
+        `http://localhost:5000/api/groups/${group.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("GROUP DETAILS:", response.data);
+
+      setMembers(response.data.members);
+
+    } catch (error) {
+      console.error(
+        "Failed to load group details:",
+        error.response?.data || error.message
+      );
+    } finally {
+      setLoading(false);
+    }
+
+
+  };
+  const handleAddMember = async () => {
+    if (!selectedMember) {
+      alert("Select a user first.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `http://localhost:5000/api/groups/${group.id}/members`,
+        {
+          userId: Number(selectedMember),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setSelectedMember("");
+      setShowAddMembers(false);
+
+      await loadGroupDetails();
+
+    } catch (error) {
+      console.error(
+        "Failed to add member:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to add member"
+      );
+    }
+  };
+
+  const handleRemoveMember = async (memberId, username) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to remove ${username} from the group?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/groups/${group.id}/members/${memberId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      await loadGroupDetails();
+
+    } catch (error) {
+      console.error(
+        "Failed to remove member:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to remove member"
+      );
+    }
+  };
+
+  const handleLeaveGroup = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to leave this group?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/api/groups/${group.id}/leave`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert(response.data.message);
+
+      onClose();
+
+    } catch (error) {
+      console.error(
+        "Failed to leave group:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to leave group"
+      );
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/users",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const existingMemberIds = members.map(
+        (member) => Number(member.user_id)
+      );
+
+      const availableUsers = response.data.filter(
+        (currentUser) =>
+          !existingMemberIds.includes(
+            Number(currentUser.id)
+          )
+      );
+
+      setUsers(availableUsers);
+
+    } catch (error) {
+      console.error(
+        "Failed to load users:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+
+
+
+  useEffect(() => {
+    if (group) {
+      loadGroupDetails();
+    }
+  }, [group]);
+
+  return (
+    <div className="group-details-overlay">
+
+      <div className="group-details">
+
+        <div className="group-details-header">
+          <div>
+            <h2>{group.name}</h2>
+            <p>{members.length} members</p>
+          </div>
+
+          <button onClick={onClose}>
+            ✕
+          </button>
+        </div>
+
+        <button
+          onClick={handleLeaveGroup}
+        >
+          Leave Group
+        </button>
+        <div className="group-members">
+
+          <h2>Members</h2>
+
+
+          <button
+            onClick={() => {
+              setShowAddMembers(true);
+              loadUsers();
+            }}
+          >
+            + Add Members
+          </button>
+
+          {showAddMembers && (
+            <div className="add-members">
+
+              <h3>Add Member</h3>
+
+              {users.length === 0 ? (
+                <p>No users available to add.</p>
+              ) : (
+                <select
+                  value={selectedMember}
+                  onChange={(event) =>
+                    setSelectedMember(event.target.value)
+                  }
+                >
+                  <option value="">
+                    Select a user
+                  </option>
+
+                  {users.map((currentUser) => (
+                    <option
+                      key={currentUser.id}
+                      value={currentUser.id}
+                    >
+                      {currentUser.username}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              <div className="add-member-actions">
+
+                <button
+                  onClick={() => {
+                    setShowAddMembers(false);
+                    setSelectedMember("");
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={handleAddMember}
+                  disabled={!selectedMember}
+                >
+                  Add
+                </button>
+
+              </div>
+
+            </div>
+          )}
+
+          {loading ? (
+            <p>Loading members...</p>
+          ) : members.length === 0 ? (
+            <p>No members found.</p>
+          ) : (
+
+            members.map((member) => (
+
+              <div
+                className="group-member"
+                key={member.user_id}
+              >
+
+                <div className="avatar">
+                  {member.username
+                    .substring(0, 2)
+                    .toUpperCase()}
+                </div>
+
+                <div>
+                  <strong>
+                    {member.username}
+                  </strong>
+
+                  {Number(member.user_id) ===
+                    Number(group.owner_id) && (
+                      <span className="group-admin">
+                        Admin
+                      </span>
+                    )}
+                </div>
+
+                {Number(user.id) === Number(group.owner_id) &&
+                  Number(member.user_id) !== Number(group.owner_id) && (
+                    <button
+                      onClick={() =>
+                        handleRemoveMember(
+                          member.user_id,
+                          member.username
+                        )
+                      }
+                    >
+                      Remove
+                    </button>
+                  )}
+
+              </div>
+
+            ))
+
+          )}
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+export default GroupDetails;
