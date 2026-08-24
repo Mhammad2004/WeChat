@@ -14,6 +14,10 @@ function Sidebar({
   const [groupName, setGroupName] = useState("");
   const [users, setUsers] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [friendRequests, setFriendRequests] = useState([]);
+  const [showRequests, setShowRequests] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -199,12 +203,161 @@ function Sidebar({
     }
   };
 
+  // =========================================
+  // LOAD FRIEND REQUESTS
+  // =========================================
+  const loadFriendRequests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.get(
+        "http://localhost:5000/api/users/friend-requests",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setFriendRequests(response.data);
+    } catch (error) {
+      console.error("Failed to load friend requests:", error);
+    }
+  };
+  // ==========================================
+  // SEARCH USERS
+  // ==========================================
+  const searchUsers = async (value) => {
+    setSearch(value);
+
+    if (!value.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.get(
+        `http://localhost:5000/api/users/search?q=${encodeURIComponent(value)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setSearchResults(response.data);
+    } catch (error) {
+      console.error("Search users error:", error);
+    }
+  };
+  // ==========================================
+  // SEND FRIEND REQUESTS
+  // ==========================================
+  const sendFriendRequest = async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `http://localhost:5000/api/users/friend-request/${userId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("Friend request sent!");
+
+      // Refresh search results
+      if (search.trim()) {
+        searchUsers(search);
+      }
+
+    } catch (error) {
+      console.error("Send friend request error:", error);
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to send friend request"
+      );
+    }
+  };
+
+
+  // ==========================================
+  // ACCEPT FREIND REQUEST
+  // ==========================================
+
+  const acceptFriendRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `http://localhost:5000/api/users/friend-requests/${requestId}/accept`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      await loadFriendRequests();
+
+      // Reload friends/sidebar
+      window.location.reload();
+
+    } catch (error) {
+      console.error("Accept request error:", error);
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to accept request"
+      );
+    }
+  };
+  // ==========================================
+  // REJECT FRIEND REQUEST
+  // ==========================================
+  const rejectFriendRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `http://localhost:5000/api/users/friend-requests/${requestId}/reject`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      await loadFriendRequests();
+
+    } catch (error) {
+      console.error("Reject request error:", error);
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to reject request"
+      );
+    }
+  };
   // ==========================================
   // RENDER
   // ==========================================
-
+  useEffect(() => {
+    loadFriendRequests();
+  }, []);
   return (
     <aside className="sidebar">
+
+
+
 
       {/* HEADER */}
 
@@ -225,6 +378,36 @@ function Sidebar({
       </div>
 
 
+
+      <button onClick={() => setShowRequests(!showRequests)}>
+        Friend Requests
+        {friendRequests.length > 0 && (
+          <span>{friendRequests.length}</span>
+        )}
+      </button>
+
+      {showRequests && (
+        <div>
+          {friendRequests.length === 0 ? (
+            <p>No friend requests</p>
+          ) : (
+            friendRequests.map((request) => (
+              <div key={request.id}>
+                <strong>{request.username}</strong>
+
+                <button onClick={() => acceptFriendRequest(request.id)}>
+                  Accept
+                </button>
+
+                <button onClick={() => rejectFriendRequest(request.id)}>
+                  Reject
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
       {/* SEARCH */}
 
       <div className="search-box">
@@ -232,6 +415,10 @@ function Sidebar({
         <input
           type="text"
           placeholder="Search people..."
+          value={search}
+          onChange={(event) => {
+            searchUsers(event.target.value);
+          }}
         />
 
       </div>
@@ -240,7 +427,31 @@ function Sidebar({
       {/* SCROLLABLE CONTENT */}
 
       <div className="sidebar-scroll">
+        {searchResults.length > 0 && (
+          <div className="search-results">
 
+            {searchResults.map((searchUser) => (
+              <div
+                key={searchUser.id}
+                className="search-result"
+              >
+
+                <div>
+                  <strong>{searchUser.username}</strong>
+                  <div>{searchUser.email}</div>
+                </div>
+
+                <button
+                  onClick={() => sendFriendRequest(searchUser.id)}
+                >
+                  Add Friend
+                </button>
+
+              </div>
+            ))}
+
+          </div>
+        )}
         {/* CHATS */}
 
         <div className="sidebar-section">
