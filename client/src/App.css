@@ -1,3 +1,11 @@
+/* =========================================================
+   DESIGN TOKENS
+   A refined indigo/violet system — replaces the generic
+   "AI blue" (#3b82f6) with a slightly warmer, more
+   distinctive primary, plus a real type + spacing scale
+   so every panel shares the same rhythm.
+========================================================= */
+
 * {
   box-sizing: border-box;
 }
@@ -10,14 +18,92 @@ body,
   height: 100%;
 }
 
+:root {
+  /* ---- surfaces ---- */
+  --bg-main: #0a0c14;
+  --bg-sidebar: #0e111c;
+  --bg-card: #141826;
+  --bg-card-hover: #1a2032;
+  --bg-input: #131826;
+  --bg-input-focus: #161c2e;
+
+  --border: rgba(255, 255, 255, 0.075);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(129, 140, 248, 0.28);
+
+  /* ---- text ---- */
+  --text: #f5f7fb;
+  --text-secondary: #9aa4b8;
+  --text-muted: #626d82;
+
+  /* ---- brand: indigo/violet instead of stock blue ---- */
+  --primary: #5b6ee8;
+  --primary-hover: #4959d4;
+  --primary-light: #8b93f2;
+  --primary-soft: rgba(91, 110, 232, 0.14);
+  --accent: #a855f7;
+
+  --success: #34d399;
+  --danger: #f0576b;
+  --warning: #f5a623;
+
+  /* ---- spacing scale ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* ---- type scale ---- */
+  --fs-2xs: 10.5px;
+  --fs-xs: 11.5px;
+  --fs-sm: 13px;
+  --fs-base: 14.5px;
+  --fs-md: 16px;
+  --fs-lg: 19px;
+  --fs-xl: 22px;
+  --fs-2xl: clamp(22px, 2.4vw, 27px);
+
+  /* ---- radius ---- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+
+  /* ---- shadow ---- */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.14);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 8px 24px rgba(91, 110, 232, 0.25);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background: #0f1115;
-  color: #f5f5f5;
+  font-family:
+    "Inter",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  font-size: var(--fs-base);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv11", "ss01";
+
+  background: var(--bg-main);
+  color: var(--text);
+
+  overflow: hidden;
 }
 
 /* =========================================================
-   APP LAYOUT
+   APP
 ========================================================= */
 
 .app {
@@ -25,6 +111,10 @@ body {
   height: 100vh;
   display: flex;
   overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(91, 110, 232, 0.09), transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05), transparent 45%),
+    var(--bg-main);
 }
 
 /* =========================================================
@@ -32,17 +122,34 @@ body {
 ========================================================= */
 
 .sidebar {
-  width: clamp(260px, 30vw, 360px);
+  width: clamp(280px, 30vw, 370px);
   min-width: 260px;
   height: 100vh;
-  background: #17191f;
-  border-right: 1px solid #2a2d35;
+
+  background: rgba(14, 17, 28, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  border-right: 1px solid var(--border);
 
   display: flex;
   flex-direction: column;
 
   overflow: hidden;
   flex-shrink: 0;
+
+  animation: sidebarEnter 0.4s var(--ease);
+}
+
+@keyframes sidebarEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* =========================================================
@@ -50,14 +157,24 @@ body {
 ========================================================= */
 
 .sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid #2a2d35;
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
 }
 
 .sidebar-header h2 {
   margin: 0;
-  font-size: 24px;
+
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+
+  background: linear-gradient(135deg, #ffffff, var(--primary-light));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .current-user {
@@ -65,22 +182,38 @@ body {
   align-items: center;
   justify-content: space-between;
 
-  margin-top: 12px;
+  margin-top: var(--space-3);
 
-  color: #8b8f9a;
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.current-user span {
+  font-weight: 600;
+  color: #d3d9e6;
 }
 
 .current-user button {
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
-  color: #60a5fa;
+
+  color: var(--primary-light);
+
   cursor: pointer;
-  font-size: 14px;
+
+  font-size: var(--fs-sm);
+  font-weight: 600;
+
+  padding: 6px 9px;
+  border-radius: var(--radius-sm);
+
+  transition: all 0.2s var(--ease);
 }
 
 .current-user button:hover {
-  color: #93c5fd;
+  color: #c2c8fb;
+  background: var(--primary-soft);
+  border-color: var(--border-hover);
 }
 
 /* =========================================================
@@ -88,52 +221,55 @@ body {
 ========================================================= */
 
 .search-box {
-  padding: 15px;
+  padding: var(--space-3) var(--space-4);
   flex-shrink: 0;
-  border-bottom: 1px solid #2a2d35;
+  border-bottom: 1px solid var(--border);
 }
 
 .search-box input {
   width: 100%;
-  padding: 12px 14px;
 
-  border: none;
-  border-radius: 8px;
+  padding: 11px 14px 11px 38px;
 
-  background: #252830;
-  color: white;
+  border: 1px solid transparent;
+  border-radius: 11px;
 
+  background:
+    linear-gradient(var(--bg-input), var(--bg-input)) padding-box,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(91, 110, 232, 0.12)) border-box;
+
+  color: var(--text);
   outline: none;
-  font-size: 14px;
+  font-size: var(--fs-sm);
+
+  transition: border 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.2s var(--ease);
 }
 
 .search-box input::placeholder {
-  color: #777c88;
+  color: var(--text-muted);
 }
 
 .search-box input:focus {
-  background: #292c35;
+  box-shadow: 0 0 0 3px var(--primary-soft), 0 8px 25px rgba(0, 0, 0, 0.18);
+  background: var(--bg-input-focus);
 }
 
 /* =========================================================
-   SIDEBAR SCROLL AREA
+   SIDEBAR SCROLL
 ========================================================= */
 
 .sidebar-scroll {
   flex: 1;
   min-height: 0;
-
   overflow-y: auto;
   overflow-x: hidden;
-
   scrollbar-width: thin;
-  scrollbar-color: #3b3f4a transparent;
+  scrollbar-color: #2a3247 transparent;
+  scroll-behavior: smooth;
 }
 
-/* Chrome / Edge scrollbar */
-
 .sidebar-scroll::-webkit-scrollbar {
-  width: 7px;
+  width: 5px;
 }
 
 .sidebar-scroll::-webkit-scrollbar-track {
@@ -141,12 +277,12 @@ body {
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: #3b3f4a;
-  border-radius: 10px;
+  background: #2a3247;
+  border-radius: var(--radius-full);
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: #505562;
+  background: #3c4763;
 }
 
 /* =========================================================
@@ -154,7 +290,7 @@ body {
 ========================================================= */
 
 .sidebar-section {
-  border-bottom: 1px solid #2a2d35;
+  border-bottom: 1px solid var(--border);
 }
 
 .section-header {
@@ -162,66 +298,59 @@ body {
   align-items: center;
   justify-content: space-between;
 
-  padding: 13px 15px;
+  padding: var(--space-3) var(--space-4);
 
   position: sticky;
   top: 0;
 
-  background: #17191f;
+  background: rgba(14, 17, 28, 0.94);
+  backdrop-filter: blur(10px);
+
   z-index: 5;
 }
 
 .section-header h3 {
   margin: 0;
-
-  color: #8b8f9a;
-
-  font-size: 12px;
-  font-weight: 600;
-
+  color: var(--text-muted);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 /* =========================================================
-   CONVERSATION LIST
+   CONVERSATIONS
 ========================================================= */
 
 .conversation-list {
   width: 100%;
 }
 
-/*
-IMPORTANT:
-Do NOT put overflow-y:auto here.
-
-.sidebar-scroll handles all scrolling.
-*/
-
 .conversation {
   width: 100%;
-
   display: flex;
   align-items: center;
+  gap: var(--space-3);
 
-  gap: 12px;
-
-  padding: 14px 15px;
-
+  padding: 11px 14px;
   cursor: pointer;
 
-  transition:
-    background 0.15s ease,
-    transform 0.1s ease;
+  border-left: 3px solid transparent;
+
+  transition: background 0.18s var(--ease), border-color 0.18s var(--ease);
 }
 
-.conversation:hover,
+.conversation:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+
 .conversation.active {
-  background: #252830;
+  background: linear-gradient(90deg, var(--primary-soft), rgba(91, 110, 232, 0.02));
+  border-left-color: var(--primary);
 }
 
 .conversation:active {
-  transform: scale(0.99);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* =========================================================
@@ -229,24 +358,41 @@ Do NOT put overflow-y:auto here.
 ========================================================= */
 
 .avatar {
-  width: 45px;
-  height: 45px;
+  width: 44px;
+  height: 44px;
 
   border-radius: 50%;
 
-  background: #3b82f6;
+  background: linear-gradient(135deg, var(--primary), #4c46d6);
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-weight: bold;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  color: white;
 
   flex-shrink: 0;
+
+  box-shadow: 0 4px 14px rgba(91, 110, 232, 0.25);
+  border: 2px solid transparent;
+
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.conversation:hover .avatar {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(91, 110, 232, 0.32);
+}
+
+.conversation.active .avatar {
+  border-color: rgba(139, 147, 242, 0.45);
 }
 
 .group-avatar {
-  font-size: 20px;
+  font-size: 18px;
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
 }
 
 /* =========================================================
@@ -259,10 +405,9 @@ Do NOT put overflow-y:auto here.
 }
 
 .conversation-info h3 {
-  margin: 0 0 5px;
-
-  font-size: 15px;
-
+  margin: 0 0 3px;
+  font-size: var(--fs-base);
+  font-weight: 650;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -270,41 +415,41 @@ Do NOT put overflow-y:auto here.
 
 .conversation-info p {
   margin: 0;
-
-  color: #8b8f9a;
-
-  font-size: 13px;
-
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* =========================================================
-   CREATE GROUP BUTTON
+   CREATE GROUP
 ========================================================= */
 
 .create-group-button {
   width: 30px;
   height: 30px;
 
-  border: none;
-  border-radius: 7px;
+  border: 1px solid rgba(139, 147, 242, 0.22);
+  border-radius: 9px;
 
-  background: #2563eb;
-  color: white;
-
-  font-size: 20px;
+  background: var(--primary-soft);
+  color: var(--primary-light);
+  font-size: 19px;
 
   cursor: pointer;
 
   display: flex;
   align-items: center;
   justify-content: center;
+
+  transition: transform 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
 
 .create-group-button:hover {
-  background: #1d4ed8;
+  background: rgba(91, 110, 232, 0.22);
+  transform: rotate(90deg);
+  box-shadow: var(--shadow-glow);
 }
 
 /* =========================================================
@@ -314,13 +459,21 @@ Do NOT put overflow-y:auto here.
 .chat-window {
   flex: 1;
   min-width: 0;
-
   height: 100vh;
 
   display: flex;
   flex-direction: column;
 
-  background: #101217;
+  background:
+    radial-gradient(circle at 75% 0%, rgba(91, 110, 232, 0.05), transparent 40%),
+    var(--bg-main);
+
+  animation: chatEnter 0.3s var(--ease);
+}
+
+@keyframes chatEnter {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* =========================================================
@@ -328,35 +481,33 @@ Do NOT put overflow-y:auto here.
 ========================================================= */
 
 .chat-header {
-  min-height: 75px;
-
-  padding: 15px 20px;
+  min-height: 72px;
+  padding: var(--space-3) var(--space-6);
 
   display: flex;
   align-items: center;
+  gap: var(--space-3);
 
-  gap: 12px;
+  border-bottom: 1px solid var(--border);
 
-  border-bottom: 1px solid #2a2d35;
+  background: rgba(10, 12, 20, 0.78);
+  backdrop-filter: blur(16px);
 
   flex-shrink: 0;
 }
 
-.chat-header h2,
-.chat-header p {
-  margin: 0;
-}
-
 .chat-header h2 {
-  font-size: 16px;
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: -0.2px;
 }
 
 .chat-header p {
-  color: #22c55e;
-
-  font-size: 13px;
-
-  margin-top: 4px;
+  margin: 3px 0 0;
+  color: var(--success);
+  font-size: var(--fs-xs);
+  font-weight: 500;
 }
 
 /* =========================================================
@@ -366,15 +517,30 @@ Do NOT put overflow-y:auto here.
 .messages {
   flex: 1;
   min-height: 0;
-
-  padding: 20px;
+  padding: var(--space-6);
 
   overflow-y: auto;
 
   display: flex;
   flex-direction: column;
+  gap: var(--space-2);
 
-  gap: 10px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #2a3247 transparent;
+}
+
+.messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background: #2a3247;
+  border-radius: var(--radius-full);
 }
 
 /* =========================================================
@@ -383,6 +549,12 @@ Do NOT put overflow-y:auto here.
 
 .message {
   display: flex;
+  animation: messageEnter 0.22s var(--ease);
+}
+
+@keyframes messageEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .message.own {
@@ -394,65 +566,77 @@ Do NOT put overflow-y:auto here.
 }
 
 .message-bubble {
-  max-width: min(60%, 600px);
-
+  max-width: min(62%, 620px);
   padding: 10px 14px;
+  border-radius: var(--radius-lg);
 
-  border-radius: 12px;
-
-  background: #252830;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 
   overflow-wrap: anywhere;
+  box-shadow: var(--shadow-sm);
+
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.message-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.message.other .message-bubble {
+  border-bottom-left-radius: 5px;
 }
 
 .message.own .message-bubble {
-  background: #2563eb;
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+  border-color: rgba(139, 147, 242, 0.18);
+  border-bottom-right-radius: 5px;
+  box-shadow: 0 6px 20px rgba(91, 110, 232, 0.22);
 }
 
 .message-bubble p {
   margin: 0;
+  line-height: 1.5;
+  font-size: var(--fs-base);
 }
 
 .sender {
   display: block;
-
-  font-size: 12px;
-
-  color: #aeb3bf;
-
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--primary-light);
   margin-bottom: 5px;
 }
 
 .message-time {
   display: block;
-
   text-align: right;
-
-  margin-top: 4px;
-
-  font-size: 10px;
-
-  color: #aeb3bf;
+  margin-top: 5px;
+  font-size: var(--fs-2xs);
+  color: var(--text-muted);
 }
 
 .message.own .message-time {
-  color: #dbeafe;
+  color: rgba(255, 255, 255, 0.75);
 }
+
+/* =========================================================
+   DATE SEPARATOR
+========================================================= */
 
 .date-separator {
   width: fit-content;
+  margin: var(--space-5) auto;
+  padding: 6px 13px;
+  border-radius: var(--radius-full);
 
-  margin: 15px auto;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
 
-  padding: 6px 12px;
-
-  border-radius: 8px;
-
-  background: #252830;
-
-  color: #aeb3bf;
-
-  font-size: 12px;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
 }
 
 /* =========================================================
@@ -461,52 +645,64 @@ Do NOT put overflow-y:auto here.
 
 .message-input {
   display: flex;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
 
-  gap: 10px;
+  border-top: 1px solid var(--border);
 
-  padding: 15px;
-
-  border-top: 1px solid #2a2d35;
+  background: rgba(10, 12, 20, 0.88);
+  backdrop-filter: blur(16px);
 
   flex-shrink: 0;
 }
 
 .message-input input {
   flex: 1;
-
   min-width: 0;
 
-  padding: 13px;
+  padding: 13px 15px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
 
-  border: none;
-  border-radius: 8px;
-
-  background: #252830;
+  background: var(--bg-input);
   color: white;
-
   outline: none;
+  font-size: var(--fs-base);
 
-  font-size: 14px;
+  transition: border 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.message-input input::placeholder {
+  color: var(--text-muted);
+}
+
+.message-input input:focus {
+  background: var(--bg-input-focus);
+  box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
 .message-input button {
-  width: 50px;
-
+  width: 48px;
   flex-shrink: 0;
 
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 
-  background: #2563eb;
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary));
   color: white;
-
-  font-size: 18px;
-
+  font-size: 17px;
   cursor: pointer;
+
+  transition: transform 0.15s var(--ease), box-shadow 0.2s var(--ease);
 }
 
 .message-input button:hover {
-  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow);
+}
+
+.message-input button:active {
+  transform: scale(0.94);
 }
 
 /* =========================================================
@@ -515,30 +711,26 @@ Do NOT put overflow-y:auto here.
 
 .message-actions {
   display: flex;
-
   gap: 4px;
-
   margin-top: 4px;
 }
 
 .edit-button,
 .delete-button {
   margin-top: 6px;
-
-  padding: 3px 7px;
+  padding: 4px 8px;
 
   border: none;
-  border-radius: 5px;
-
+  border-radius: 7px;
   background: transparent;
-
-  font-size: 11px;
-
+  font-size: var(--fs-xs);
   cursor: pointer;
+
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
 }
 
 .edit-button {
-  color: #aeb3bf;
+  color: var(--text-secondary);
 }
 
 .edit-button:hover {
@@ -547,28 +739,24 @@ Do NOT put overflow-y:auto here.
 }
 
 .message.own .edit-button {
-  color: #dbeafe;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .message.own .edit-button:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .delete-button {
-  color: #f87171;
+  color: #f68a97;
 }
 
 .delete-button:hover {
-  background: rgba(239, 68, 68, 0.12);
-  color: #ef4444;
+  background: rgba(240, 87, 107, 0.14);
+  color: var(--danger);
 }
 
 .message.own .delete-button {
-  color: #fee2e2;
-}
-
-.message.own .delete-button:hover {
-  background: rgba(255, 255, 255, 0.15);
+  color: #ffe2e5;
 }
 
 /* =========================================================
@@ -577,63 +765,54 @@ Do NOT put overflow-y:auto here.
 
 .edit-container {
   display: flex;
-
   flex-direction: column;
-
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .edit-container input {
   width: 100%;
-
   min-width: 180px;
 
   padding: 8px 10px;
+  border: 1px solid #334155;
+  border-radius: var(--radius-sm);
 
-  border: 1px solid #3b3f4a;
-  border-radius: 6px;
-
-  background: #17191f;
+  background: #0f1420;
   color: white;
-
   outline: none;
+
+  transition: border 0.2s var(--ease);
 }
 
 .edit-container input:focus {
-  border-color: #3b82f6;
+  border-color: var(--primary);
 }
 
 .edit-actions {
   display: flex;
-
   gap: 6px;
 }
 
 .edit-actions button {
   padding: 5px 9px;
-
   border: none;
-  border-radius: 5px;
-
+  border-radius: 7px;
   cursor: pointer;
+  font-size: var(--fs-xs);
 
-  font-size: 12px;
-
-  background: #2563eb;
+  background: var(--primary-hover);
   color: white;
+
+  transition: all 0.2s var(--ease);
 }
 
 .edit-actions button:hover {
-  background: #1d4ed8;
+  background: var(--primary);
 }
 
 .edit-actions button:last-child {
-  background: #252830;
-  color: #aeb3bf;
-}
-
-.edit-actions button:last-child:hover {
-  background: #30333d;
+  background: #1e2536;
+  color: var(--text-secondary);
 }
 
 /* =========================================================
@@ -642,23 +821,150 @@ Do NOT put overflow-y:auto here.
 
 .clear-button {
   margin-left: auto;
+  padding: 8px 11px;
 
-  padding: 8px 12px;
-
-  border: none;
-  border-radius: 7px;
-
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   background: transparent;
 
-  color: #f87171;
-
+  color: #f68a97;
   cursor: pointer;
+  font-size: var(--fs-xs);
 
-  font-size: 13px;
+  transition: all 0.2s var(--ease);
 }
 
 .clear-button:hover {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(240, 87, 107, 0.1);
+  border-color: rgba(240, 87, 107, 0.18);
+}
+
+/* =========================================================
+   DELETE CONVERSATION
+========================================================= */
+
+.delete-conversation-button {
+  margin-left: auto;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.45;
+
+  padding: 7px;
+  border-radius: var(--radius-sm);
+
+  transition: opacity 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.conversation:hover .delete-conversation-button {
+  opacity: 0.8;
+}
+
+.delete-conversation-button:hover {
+  opacity: 1;
+  background: rgba(240, 87, 107, 0.1);
+  transform: scale(1.05);
+}
+
+/* =========================================================
+   UNFRIEND / BLOCK BUTTONS
+========================================================= */
+
+.unfriend-button,
+.block-user-button {
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 7px;
+  opacity: 0.55;
+
+  transition: all 0.2s var(--ease);
+}
+
+.unfriend-button:hover {
+  opacity: 1;
+  background: rgba(245, 166, 35, 0.1);
+  border-color: rgba(245, 166, 35, 0.18);
+  transform: scale(1.08);
+}
+
+.block-user-button:hover {
+  opacity: 1;
+  background: rgba(240, 87, 107, 0.1);
+  border-color: rgba(240, 87, 107, 0.18);
+  transform: scale(1.08);
+}
+
+/* =========================================================
+   SEARCH RESULTS / FRIEND REQUEST CARDS
+========================================================= */
+
+.search-result {
+  margin: 10px 15px;
+  padding: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+
+  animation: fadeUp 0.25s var(--ease);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.search-result strong {
+  font-size: var(--fs-sm);
+}
+
+.search-result div div {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.search-result button,
+button {
+  transition: transform 0.15s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.search-result button {
+  border: none;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+
+  background: var(--primary);
+  color: white;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.search-result button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(91, 110, 232, 0.22);
+}
+
+/* =========================================================
+   EMPTY STATES
+========================================================= */
+
+.empty-message {
+  padding: var(--space-5) var(--space-4);
+  margin: 0;
+
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  text-align: center;
 }
 
 /* =========================================================
@@ -667,84 +973,107 @@ Do NOT put overflow-y:auto here.
 
 .login-container {
   min-height: 100vh;
-
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: var(--space-5);
 
-  padding: 20px;
-
-  background: #0f1115;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(91, 110, 232, 0.16), transparent 38%),
+    radial-gradient(circle at 82% 80%, rgba(168, 85, 247, 0.11), transparent 38%),
+    var(--bg-main);
 }
 
 .login-form {
-  width: min(350px, 100%);
+  width: min(390px, 100%);
+  padding: var(--space-8);
 
-  padding: 30px;
-
-  background: #17191f;
-
-  border: 1px solid #2a2d35;
-
-  border-radius: 12px;
+  background: rgba(20, 24, 38, 0.92);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
 
   display: flex;
   flex-direction: column;
+  gap: var(--space-4);
 
-  gap: 15px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(22px);
+
+  animation: loginEnter 0.45s var(--ease);
 }
 
-.login-form h1,
+@keyframes loginEnter {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.login-form h1 {
+  text-align: center;
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+
+  background: linear-gradient(135deg, #ffffff, var(--primary-light));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .login-form p {
   text-align: center;
-
   margin: 0;
-}
-
-.login-form p {
-  color: #8b8f9a;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
 }
 
 .login-form input {
-  padding: 13px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
 
-  border: none;
-  border-radius: 8px;
-
-  background: #252830;
+  background: var(--bg-input);
   color: white;
-
   outline: none;
+
+  transition: border 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.login-form input:focus {
+  border-color: var(--border-hover);
+  box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
 .login-form button {
   padding: 13px;
-
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
 
-  background: #2563eb;
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary));
   color: white;
-
   cursor: pointer;
+  font-size: var(--fs-base);
+  font-weight: 650;
 
-  font-size: 15px;
+  transition: transform 0.15s var(--ease), box-shadow 0.2s var(--ease);
 }
 
 .login-form button:hover {
-  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(91, 110, 232, 0.28);
 }
 
 .login-form .switch-button {
   background: transparent;
-
-  color: #60a5fa;
-
-  font-size: 13px;
+  color: var(--primary-light);
+  font-size: var(--fs-sm);
+  box-shadow: none;
 }
 
 .login-form .switch-button:hover {
-  background: transparent;
+  background: var(--primary-soft);
+  box-shadow: none;
+  transform: none;
 }
 
 /* =========================================================
@@ -753,115 +1082,142 @@ Do NOT put overflow-y:auto here.
 
 .modal-overlay {
   position: fixed;
-
   inset: 0;
 
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(3, 5, 15, 0.74);
+  backdrop-filter: blur(9px);
 
   display: flex;
   align-items: center;
   justify-content: center;
-
-  padding: 20px;
+  padding: var(--space-5);
 
   z-index: 1000;
+  animation: modalOverlay 0.2s var(--ease);
+}
+
+@keyframes modalOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .create-group-modal {
-  width: min(400px, 100%);
-
-  max-height: 80vh;
-
+  width: min(430px, 100%);
+  max-height: 82vh;
   overflow-y: auto;
 
-  padding: 25px;
+  padding: var(--space-6);
 
-  background: #17191f;
+  background: linear-gradient(150deg, rgba(20, 24, 38, 0.98), rgba(14, 17, 28, 0.98));
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
 
-  border: 1px solid #2a2d35;
+  box-shadow: var(--shadow-lg);
+  animation: modalEnter 0.28s var(--ease);
+}
 
-  border-radius: 12px;
+@keyframes modalEnter {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .create-group-modal h2 {
   margin-top: 0;
+  margin-bottom: var(--space-5);
+  font-size: 21px;
+  font-weight: 750;
 }
 
 .create-group-modal input[type="text"] {
   width: 100%;
+  padding: 12px 13px;
 
-  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
 
-  border: none;
-  border-radius: 8px;
-
-  background: #252830;
+  background: var(--bg-input);
   color: white;
-
   outline: none;
+
+  transition: border 0.2s var(--ease);
+}
+
+.create-group-modal input[type="text"]:focus {
+  border-color: var(--border-hover);
 }
 
 .create-group-modal h3 {
-  font-size: 14px;
-
-  color: #8b8f9a;
-
-  margin: 20px 0 10px;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin: var(--space-5) 0 var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
 }
 
 .member-selection {
   display: flex;
-
   flex-direction: column;
+  gap: 5px;
 
-  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 3px;
 }
 
 .member-option {
   display: flex;
   align-items: center;
+  gap: var(--space-2);
 
-  gap: 10px;
-
-  padding: 10px;
-
-  border-radius: 8px;
-
+  padding: 11px;
+  border-radius: 9px;
   cursor: pointer;
+
+  transition: background 0.18s var(--ease);
 }
 
 .member-option:hover {
-  background: #252830;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .member-option input {
   width: 16px;
   height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
 }
 
 .modal-actions {
   display: flex;
-
   justify-content: flex-end;
-
-  gap: 10px;
-
-  margin-top: 20px;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
 }
 
 .modal-actions button {
-  padding: 10px 16px;
-
+  padding: 10px 15px;
   border: none;
-  border-radius: 7px;
-
+  border-radius: 9px;
   cursor: pointer;
+
+  font-size: var(--fs-sm);
+  font-weight: 600;
+
+  background: #1e2536;
+  color: #cbd5e1;
+}
+
+.modal-actions button:hover {
+  background: #2a3247;
 }
 
 .modal-actions button:last-child {
-  background: #2563eb;
-
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary));
   color: white;
+}
+
+.modal-actions button:last-child:hover {
+  box-shadow: 0 8px 22px rgba(91, 110, 232, 0.28);
 }
 
 /* =========================================================
@@ -869,68 +1225,84 @@ Do NOT put overflow-y:auto here.
 ========================================================= */
 
 @media (max-width: 900px) {
-
   .sidebar {
-    width: 280px;
-    min-width: 240px;
+    width: 290px;
+    min-width: 250px;
   }
 
   .message-bubble {
-    max-width: 70%;
+    max-width: 74%;
   }
 
   .messages {
-    padding: 15px;
+    padding: var(--space-4);
   }
-
 }
 
 /* =========================================================
    MOBILE
+   A real chat app doesn't squeeze two panes onto a phone —
+   it shows one at a time. This ships two things:
+   1) A default fallback (list + chat side by side, resized)
+      that works with zero JS changes.
+   2) An opt-in single-pane mode: add `chat-open` to `.app`
+      (in React state, e.g. when a conversation is selected)
+      to swap to a full-width chat view with a back affordance.
+      Remove `chat-open` to return to the list. This costs one
+      className toggle in your component and is the single
+      biggest UX win available here.
 ========================================================= */
 
 @media (max-width: 650px) {
-
   .sidebar {
-    width: 42%;
-    min-width: 210px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .chat-window {
+    display: none;
+  }
+
+  /* Opt-in: add class="app chat-open" when a chat is active */
+  .app.chat-open .sidebar {
+    display: none;
+  }
+
+  .app.chat-open .chat-window {
+    display: flex;
+    width: 100%;
   }
 
   .sidebar-header {
-    padding: 15px;
+    padding: var(--space-4);
   }
 
   .sidebar-header h2 {
-    font-size: 20px;
+    font-size: var(--fs-lg);
   }
 
   .current-user {
-    font-size: 12px;
-  }
-
-  .current-user button {
-    font-size: 12px;
+    font-size: var(--fs-xs);
   }
 
   .search-box {
-    padding: 10px;
+    padding: var(--space-2);
   }
 
   .search-box input {
-    padding: 10px;
-    font-size: 12px;
+    padding: 10px 10px 10px 36px;
+    font-size: var(--fs-xs);
   }
 
   .conversation {
-    padding: 11px 10px;
-    gap: 8px;
+    padding: 10px;
+    gap: var(--space-2);
   }
 
   .avatar {
-    width: 38px;
-    height: 38px;
-
-    font-size: 13px;
+    width: 42px;
+    height: 42px;
+    font-size: var(--fs-xs);
   }
 
   .group-avatar {
@@ -938,19 +1310,19 @@ Do NOT put overflow-y:auto here.
   }
 
   .conversation-info h3 {
-    font-size: 13px;
+    font-size: var(--fs-sm);
   }
 
   .conversation-info p {
-    font-size: 11px;
+    font-size: var(--fs-xs);
   }
 
   .section-header {
-    padding: 10px;
+    padding: var(--space-2);
   }
 
   .section-header h3 {
-    font-size: 11px;
+    font-size: var(--fs-2xs);
   }
 
   .create-group-button {
@@ -959,75 +1331,65 @@ Do NOT put overflow-y:auto here.
   }
 
   .chat-header {
-    min-height: 65px;
-    padding: 10px;
+    min-height: 62px;
+    padding: var(--space-2) var(--space-3);
   }
 
   .chat-header h2 {
-    font-size: 14px;
+    font-size: var(--fs-sm);
   }
 
   .chat-header p {
-    font-size: 11px;
+    font-size: var(--fs-xs);
   }
 
   .messages {
-    padding: 10px;
+    padding: var(--space-3) var(--space-2);
   }
 
   .message-bubble {
-    max-width: 80%;
-    padding: 9px 11px;
+    max-width: 85%;
+    padding: 9px 12px;
+    border-radius: 14px;
+  }
+
+  .message-bubble p {
+    font-size: var(--fs-sm);
   }
 
   .message-input {
-    padding: 10px;
-    gap: 7px;
+    padding: var(--space-2);
+    gap: var(--space-2);
   }
 
   .message-input input {
     padding: 11px;
+    font-size: var(--fs-sm);
   }
 
   .message-input button {
     width: 42px;
   }
 
+  .search-result {
+    margin: var(--space-2);
+    padding: var(--space-2);
+  }
 }
 
 /* =========================================================
-   VERY SMALL PHONES
+   SMALL PHONES
 ========================================================= */
 
 @media (max-width: 450px) {
-
-  .sidebar {
-    width: 38%;
-    min-width: 175px;
-  }
-
-  .sidebar-header h2 {
-    font-size: 17px;
-  }
-
   .current-user {
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
+    gap: 5px;
   }
 
-  .conversation {
-    padding: 10px 7px;
-  }
-
-  .avatar {
-    width: 34px;
-    height: 34px;
-    font-size: 11px;
-  }
-
-  .conversation-info h3 {
-    font-size: 12px;
+  .current-user button {
+    padding: 4px 6px;
   }
 
   .conversation-info p {
@@ -1035,28 +1397,71 @@ Do NOT put overflow-y:auto here.
   }
 
   .message-bubble {
-    max-width: 85%;
+    max-width: 90%;
   }
 
   .modal-overlay {
-    padding: 10px;
+    padding: var(--space-2);
   }
 
   .create-group-modal {
-    padding: 18px;
+    padding: var(--space-4);
+    border-radius: 15px;
   }
 
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
 }
 
-.delete-conversation-button {
-  margin-left: auto;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  opacity: 0.6;
-  padding: 6px;
+/* =========================================================
+   EXTRA SMALL DEVICES
+========================================================= */
+
+@media (max-width: 360px) {
+  .avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .conversation-info h3 {
+    font-size: var(--fs-xs);
+  }
+
+  .message-bubble {
+    max-width: 94%;
+  }
+
+  .message-input button {
+    width: 38px;
+  }
 }
 
-.delete-conversation-button:hover {
-  opacity: 1;
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -102,6 +102,24 @@ router.get("/:userId", authMiddleware, async (req, res) => {
     const currentUserId = req.user.id;
     const otherUserId = Number(req.params.userId);
 
+
+    // Check if the users are friends
+    const [friendship] = await db.query(
+      `
+  SELECT id
+  FROM friendships
+  WHERE user_id = ?
+    AND friend_id = ?
+  `,
+      [currentUserId, otherUserId]
+    );
+
+    if (friendship.length === 0) {
+      return res.status(403).json({
+        message: "You can only chat with friends"
+      });
+    }
+
     // Find when THIS user cleared this conversation
     const [clearRows] = await db.query(
       `SELECT cleared_at

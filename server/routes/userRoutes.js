@@ -531,4 +531,32 @@ router.delete(
     }
   }
 );
+router.get("/blocked", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const [users] = await db.query(
+      `
+      SELECT
+        u.id,
+        u.username,
+        u.email
+      FROM blocked_users b
+      JOIN users u ON u.id = b.blocked_id
+      WHERE b.blocker_id = ?
+      ORDER BY u.username ASC
+      `,
+      [userId]
+    );
+
+    res.json(users);
+
+  } catch (error) {
+    console.error("Get blocked users error:", error);
+
+    res.status(500).json({
+      message: "Failed to get blocked users"
+    });
+  }
+});
 module.exports = router;

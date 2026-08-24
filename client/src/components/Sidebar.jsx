@@ -18,7 +18,8 @@ function Sidebar({
   const [searchResults, setSearchResults] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [showRequests, setShowRequests] = useState(false);
-
+  const [blockedUsers, setBlockedUsers] = useState([]);
+  const [showBlocked, setShowBlocked] = useState(false);
   const token = localStorage.getItem("token");
 
   // ==========================================
@@ -288,6 +289,101 @@ function Sidebar({
 
 
   // ==========================================
+  // HANDLE UNFREIND REQUEST
+  // ==========================================
+  const handleUnfriend = async (event, friendId) => {
+    event.stopPropagation();
+
+    const confirmed = window.confirm(
+      "Are you sure you want to unfriend this person?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.delete(
+        `http://localhost:5000/api/users/friends/${friendId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Close chat if this friend is currently selected
+      if (selectedUser?.id === friendId) {
+        onSelectUser(null);
+      }
+
+      // Refresh friends
+      await loadUsers();
+
+      alert("Friend removed successfully.");
+
+    } catch (error) {
+      console.error(
+        "Unfriend error:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to unfriend"
+      );
+    }
+  };
+  // ==========================================
+  // HANDEL BLOCK
+  // ==========================================
+  const handleBlock = async (event, userId) => {
+    event.stopPropagation();
+
+    const confirmed = window.confirm(
+      "Are you sure you want to block this person?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `http://localhost:5000/api/users/block/${userId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (selectedUser?.id === userId) {
+        onSelectUser(null);
+      }
+
+      await loadUsers();
+
+      alert("User blocked successfully.");
+
+    } catch (error) {
+      console.error(
+        "Block error:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to block user"
+      );
+    }
+  };
+  // ==========================================
   // ACCEPT FREIND REQUEST
   // ==========================================
 
@@ -348,11 +444,70 @@ function Sidebar({
     }
   };
   // ==========================================
+  // LOAD BLOCKED USERS
+  // ==========================================
+  const loadBlockedUsers = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.get(
+        "http://localhost:5000/api/users/blocked",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setBlockedUsers(response.data);
+    } catch (error) {
+      console.error("Failed to load blocked users:", error);
+    }
+  };
+  // ==========================================
+  // HANDEL BLOCK USERS
+  // ==========================================
+  const handleUnblock = async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.delete(
+        `http://localhost:5000/api/users/block/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      await loadBlockedUsers();
+
+      alert("User unblocked successfully.");
+
+    } catch (error) {
+      console.error("Unblock error:", error);
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to unblock user"
+      );
+    }
+  };
+  // ==========================================
   // RENDER
   // ==========================================
   useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    loadGroups();
+    loadUsers();
     loadFriendRequests();
-  }, []);
+    loadBlockedUsers();
+  }, [user]);
+
+
   return (
     <aside className="sidebar">
 
@@ -363,7 +518,7 @@ function Sidebar({
 
       <div className="sidebar-header">
 
-        <h2>WeChat</h2>
+        <h1>WeChat</h1>
 
         <div className="current-user">
 
@@ -401,6 +556,33 @@ function Sidebar({
 
                 <button onClick={() => rejectFriendRequest(request.id)}>
                   Reject
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      <button onClick={() => setShowBlocked(!showBlocked)}>
+        Blocked Users
+        {blockedUsers.length > 0 && (
+          <span>{blockedUsers.length}</span>
+        )}
+      </button>
+
+      {showBlocked && (
+        <div>
+          {blockedUsers.length === 0 ? (
+            <p>No blocked users</p>
+          ) : (
+            blockedUsers.map((blockedUser) => (
+              <div key={blockedUser.id}>
+                <strong>{blockedUser.username}</strong>
+
+                <button
+                  onClick={() => handleUnblock(blockedUser.id)}
+                >
+                  Unblock
                 </button>
               </div>
             ))
@@ -520,7 +702,27 @@ function Sidebar({
                   >
                     🗑️
                   </button>
-
+                  <button
+                    className="unfriend-button"
+                    onClick={(event) =>
+                      handleUnfriend(
+                        event,
+                        currentUser.id
+                      )
+                    }
+                    title="Unfriend"
+                  >
+                    💔
+                  </button>
+                  <button
+                    className="block-user-button"
+                    onClick={(event) =>
+                      handleBlock(event, currentUser.id)
+                    }
+                    title="Block"
+                  >
+                    🚫
+                  </button>
                 </div>
 
               ))

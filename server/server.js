@@ -178,17 +178,83 @@ io.on("connection", (socket) => {
       const senderId = socket.user.id;
       const senderName = socket.user.username;
 
-      // Save message to MySQL
+      if (!recipientId || !text || !text.trim()) {
+        return;
+      }
+
+      // ==========================================
+      // CHECK BLOCK STATUS
+      // ==========================================
+
+      const [blocked] = await db.query(
+        `
+      SELECT id
+      FROM blocked_users
+      WHERE
+        (blocker_id = ? AND blocked_id = ?)
+        OR
+        (blocker_id = ? AND blocked_id = ?)
+      `,
+        [
+          senderId,
+          recipientId,
+          recipientId,
+          senderId
+        ]
+      );
+
+      if (blocked.length > 0) {
+        console.log("Message blocked: users are blocked");
+
+        io.to(socket.id).emit("message_error", {
+          message: "You cannot message this user."
+        });
+
+        return;
+      }
+
+      // ==========================================
+      // CHECK FRIENDSHIP
+      // ==========================================
+
+      const [friendship] = await db.query(
+        `
+      SELECT id
+      FROM friendships
+      WHERE user_id = ?
+        AND friend_id = ?
+      `,
+        [senderId, recipientId]
+      );
+
+      if (friendship.length === 0) {
+        console.log("Message rejected: users are not friends");
+
+        io.to(socket.id).emit("message_error", {
+          message: "You can only message your friends."
+        });
+
+        return;
+      }
+
+      // ==========================================
+      // SAVE MESSAGE
+      // ==========================================
+
       const [result] = await db.query(
         `INSERT INTO messages
       (sender_id, receiver_id, message)
       VALUES (?, ?, ?)`,
-        [senderId, recipientId, text]
+        [
+          senderId,
+          recipientId,
+          text.trim()
+        ]
       );
 
       const newMessage = {
         id: result.insertId,
-        text,
+        text: text.trim(),
         senderId,
         senderName,
         recipientId,
