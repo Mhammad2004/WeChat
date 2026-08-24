@@ -74,6 +74,53 @@ function Sidebar({
     }
   };
 
+
+  // ==========================================
+  // CLEAR DIRECT CONVERSATION
+  // ==========================================
+
+  const handleClearConversation = async (event, otherUserId) => {
+    event.stopPropagation();
+
+    const confirmed = window.confirm(
+      "Clear this conversation?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/messages/conversation/${otherUserId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // If this conversation is currently open,
+      // close it and let App reset the messages.
+      if (selectedUser?.id === otherUserId) {
+        onSelectUser(null);
+      }
+
+      alert("Conversation cleared successfully.");
+
+    } catch (error) {
+      console.error(
+        "Clear conversation error:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to clear conversation"
+      );
+    }
+  };
+
   // ==========================================
   // LOAD DATA
   // ==========================================
@@ -220,8 +267,8 @@ function Sidebar({
                 <div
                   key={currentUser.id}
                   className={`conversation ${selectedUser?.id === currentUser.id
-                      ? "active"
-                      : ""
+                    ? "active"
+                    : ""
                     }`}
                   onClick={() => {
                     console.log("USER CLICKED:", currentUser);
@@ -241,7 +288,6 @@ function Sidebar({
 
 
                   <div className="conversation-info">
-
                     <h3>
                       {currentUser.username}
                     </h3>
@@ -249,8 +295,20 @@ function Sidebar({
                     <p>
                       Direct message
                     </p>
-
                   </div>
+
+                  <button
+                    className="delete-conversation-button"
+                    onClick={(event) =>
+                      handleClearConversation(
+                        event,
+                        currentUser.id
+                      )
+                    }
+                    title="Clear conversation"
+                  >
+                    🗑️
+                  </button>
 
                 </div>
 
@@ -277,7 +335,7 @@ function Sidebar({
                 setShowCreateGroup(true);
               }}
             >
-               +
+              +
             </button>
 
           </div>
@@ -298,8 +356,8 @@ function Sidebar({
                 <div
                   key={group.id}
                   className={`conversation ${selectedGroup?.id === group.id
-                      ? "active"
-                      : ""
+                    ? "active"
+                    : ""
                     }`}
                   onClick={() => {
 

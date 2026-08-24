@@ -7,6 +7,8 @@ function Message({
   isOwn,
   socket,
   createdAt,
+  isGroup,
+  isAdmin,
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(text);
@@ -50,9 +52,8 @@ function Message({
 
   return (
     <div
-      className={`message ${
-        isOwn ? "own" : "other"
-      }`}
+      className={`message ${isOwn ? "own" : "other"
+        }`}
     >
       <div className="message-bubble">
 
@@ -68,17 +69,19 @@ function Message({
               {formatTime(createdAt)}
             </span>
 
-            {isOwn && (
+            {(isOwn || (isGroup && isAdmin)) && (
               <div className="message-actions">
 
-                <button
-                  className="edit-button"
-                  onClick={() =>
-                    setIsEditing(true)
-                  }
-                >
-                  Edit
-                </button>
+                {isOwn && (
+                  <button
+                    className="edit-button"
+                    onClick={() =>
+                      setIsEditing(true)
+                    }
+                  >
+                    Edit
+                  </button>
+                )}
 
                 <button
                   className="delete-button"

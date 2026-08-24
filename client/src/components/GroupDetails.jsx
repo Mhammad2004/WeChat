@@ -109,6 +109,125 @@ function GroupDetails({
       );
     }
   };
+  const handleDeleteMemberMessages = async (
+    memberId,
+    username
+  ) => {
+    const confirmed = window.confirm(
+      `Delete ALL messages sent by ${username}?\n\nThis will permanently remove their messages for everyone.`
+    );
+
+    if (!confirmed) return;
+
+    const secondConfirmation = window.confirm(
+      `Are you absolutely sure you want to delete ${username}'s messages?`
+    );
+
+    if (!secondConfirmation) return;
+
+    try {
+      const response = await axios.delete(
+        `http://localhost:5000/api/groups/${group.id}/messages/member/${memberId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert(
+        response.data.message
+      );
+
+    } catch (error) {
+      console.error(
+        "Failed to delete member messages:",
+        error.response?.data ||
+        error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to delete member messages"
+      );
+    }
+  };
+  // ==========================================
+  // CLEAR GROUP CONVERSATION
+  // ==========================================
+
+  const handleClearGroupConversation = async () => {
+    const confirmed = window.confirm(
+      "Clear this group conversation for yourself?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/messages/group/${group.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("Group conversation cleared successfully.");
+
+      onClose();
+    } catch (error) {
+      console.error(
+        "Failed to clear group conversation:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to clear group conversation"
+      );
+    }
+  };
+
+  const handleDeleteAllMessages = async () => {
+    const confirmed = window.confirm(
+      "DELETE ALL messages in this group?\n\nThis will permanently remove the messages for EVERYONE."
+    );
+
+    if (!confirmed) return;
+
+    const secondConfirmation = window.confirm(
+      "Are you absolutely sure? This cannot be undone."
+    );
+
+    if (!secondConfirmation) return;
+
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/groups/${group.id}/messages`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("All group messages have been deleted.");
+
+      onClose();
+
+    } catch (error) {
+      console.error(
+        "Failed to delete all messages:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to delete all messages"
+      );
+    }
+  };
 
   const handleLeaveGroup = async () => {
     const confirmed = window.confirm(
@@ -203,10 +322,28 @@ function GroupDetails({
         </div>
 
         <button
+          onClick={handleClearGroupConversation}
+        >
+          🗑️ Clear Group Chat
+        </button>
+
+        {Number(user.id) === Number(group.owner_id) && (
+
+          <button
+            onClick={handleDeleteAllMessages}
+          >
+            🗑️ Delete All Messages
+          </button>
+        )}
+
+
+        <button
           onClick={handleLeaveGroup}
         >
           Leave Group
         </button>
+
+
         <div className="group-members">
 
           <h2>Members</h2>
@@ -307,16 +444,29 @@ function GroupDetails({
 
                 {Number(user.id) === Number(group.owner_id) &&
                   Number(member.user_id) !== Number(group.owner_id) && (
-                    <button
-                      onClick={() =>
-                        handleRemoveMember(
-                          member.user_id,
-                          member.username
-                        )
-                      }
-                    >
-                      Remove
-                    </button>
+                    <>
+                      <button
+                        onClick={() =>
+                          handleRemoveMember(
+                            member.user_id,
+                            member.username
+                          )
+                        }
+                      >
+                        Remove
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          handleDeleteMemberMessages(
+                            member.user_id,
+                            member.username
+                          )
+                        }
+                      >
+                        🗑️ Delete Messages
+                      </button>
+                    </>
                   )}
 
               </div>

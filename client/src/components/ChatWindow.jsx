@@ -133,7 +133,12 @@ function ChatWindow({
               socket={socket}
 
               isGroup={isGroup}
-
+              
+              isAdmin={
+                isGroup &&
+                Number(user.id) ===
+                Number(selectedGroup.owner_id)
+              }
             />
 
           )

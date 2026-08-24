@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 
@@ -31,8 +31,18 @@ function App() {
 
   const [socket, setSocket] =
     useState(null);
+  const selectedUserRef =
+    useRef(selectedUser);
 
+  const selectedGroupRef =
+    useRef(selectedGroup);
+  useEffect(() => {
+    selectedUserRef.current =
+      selectedUser;
 
+    selectedGroupRef.current =
+      selectedGroup;
+  }, [selectedUser, selectedGroup]);
   // ==========================================
   // SOCKET CONNECTION
   // ==========================================
@@ -79,23 +89,65 @@ function App() {
     // ==========================================
     // DIRECT MESSAGE
     // ==========================================
+    // old function
+    // const handleReceiveMessage =
+    //   (message) => {
 
-    const handleReceiveMessage =
-      (message) => {
+    //     setMessages(
+    //       (previousMessages) => [
+    //         ...previousMessages,
+    //         {
+    //           ...message,
+    //           isOwn:
+    //             message.senderId ===
+    //             user.id,
+    //         },
+    //       ]
+    //     );
+    //   };
 
-        setMessages(
-          (previousMessages) => [
-            ...previousMessages,
-            {
-              ...message,
-              isOwn:
-                message.senderId ===
-                user.id,
-            },
-          ]
-        );
-      };
+    // new function
+    const handleReceiveMessage = (message) => {
 
+      const currentUser =
+        selectedUserRef.current;
+
+      const currentGroup =
+        selectedGroupRef.current;
+
+      // We are currently viewing a group
+      if (currentGroup) {
+        return;
+      }
+
+      // No private conversation is open
+      if (!currentUser) {
+        return;
+      }
+
+      // This message isn't part of the
+      // currently opened private conversation
+      if (
+        Number(message.senderId) !==
+        Number(currentUser.id) &&
+        Number(message.recipientId) !==
+        Number(currentUser.id)
+      ) {
+        return;
+      }
+
+      setMessages(
+        (previousMessages) => [
+          ...previousMessages,
+          {
+            ...message,
+            isOwn:
+              Number(message.senderId) ===
+              Number(user.id),
+          },
+        ]
+      );
+    };
 
     newSocket.on(
       "receive_message",
@@ -106,24 +158,55 @@ function App() {
     // ==========================================
     // GROUP MESSAGE
     // ==========================================
+    // old function
+    // const handleReceiveGroupMessage =
+    //   (message) => {
 
-    const handleReceiveGroupMessage =
-      (message) => {
-
-        setMessages(
-          (previousMessages) => [
-            ...previousMessages,
-            {
-              ...message,
-              isOwn:
-                message.senderId ===
-                user.id,
-            },
-          ]
-        );
-      };
+    //     setMessages(
+    //       (previousMessages) => [
+    //         ...previousMessages,
+    //         {
+    //           ...message,
+    //           isOwn:
+    //             message.senderId ===
+    //             user.id,
+    //         },
+    //       ]
+    //     );
+    //   };
 
 
+    // new function
+    const handleReceiveGroupMessage = (message) => {
+
+      const currentGroup =
+        selectedGroupRef.current;
+
+      // No group is currently open
+      if (!currentGroup) {
+        return;
+      }
+
+      // Message belongs to another group
+      if (
+        Number(message.groupId) !==
+        Number(currentGroup.id)
+      ) {
+        return;
+      }
+
+      setMessages(
+        (previousMessages) => [
+          ...previousMessages,
+          {
+            ...message,
+            isOwn:
+              Number(message.senderId) ===
+              Number(user.id),
+          },
+        ]
+      );
+    };
     newSocket.on(
       "receive_group_message",
       handleReceiveGroupMessage
@@ -209,7 +292,7 @@ function App() {
       newSocket.disconnect();
     };
 
-  }, [user]);
+  }, [selectedUser, selectedGroup, user]);
 
 
   // ==========================================
