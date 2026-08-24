@@ -518,7 +518,7 @@ function Sidebar({
 
       <div className="sidebar-header">
 
-        <h1>WeChat</h1>
+        <h3>WeChat</h3>
 
         <div className="current-user">
 
@@ -534,11 +534,14 @@ function Sidebar({
 
 
 
-      <button onClick={() => setShowRequests(!showRequests)}>
-        Friend Requests
+      <button
+        className="friend-requests-button"
+        onClick={() => setShowRequests(!showRequests)}
+      >        Friend Requests
         {friendRequests.length > 0 && (
-          <span>{friendRequests.length}</span>
-        )}
+          <span className="count-badge">
+            {friendRequests.length}
+          </span>)}
       </button>
 
       {showRequests && (
@@ -563,11 +566,15 @@ function Sidebar({
         </div>
       )}
 
-      <button onClick={() => setShowBlocked(!showBlocked)}>
+      <button
+        className="blocked-users-button"
+        onClick={() => setShowBlocked(!showBlocked)}
+      >
         Blocked Users
         {blockedUsers.length > 0 && (
-          <span>{blockedUsers.length}</span>
-        )}
+          <span className="count-badge">
+            {blockedUsers.length}
+          </span>)}
       </button>
 
       {showBlocked && (
@@ -686,7 +693,7 @@ function Sidebar({
                     </h3>
 
                     <p>
-                      Direct message
+                      message
                     </p>
                   </div>
 
@@ -910,6 +917,5 @@ function Sidebar({
     </aside>
   );
 }
-
 export default Sidebar;
 
