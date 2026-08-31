@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import { motion, AnimatePresence } from "motion/react";
 function Sidebar({
   user,
   onLogout,
@@ -518,7 +518,7 @@ function Sidebar({
 
       <div className="sidebar-header">
 
-        <h3>WeChat</h3>
+        {/* <h3>WeChat</h3> */}
 
         <div className="current-user">
 

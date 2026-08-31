@@ -48,7 +48,7 @@ function Login({ onLogin, onSwitchToRegister }) {
     <div className="login-container">
       <form className="login-form" onSubmit={handleSubmit}>
         <h1>WeChat</h1>
-        <p>Welcome back 👋</p>
+        {/* <p>Welcome back 👋</p> */}
 
         <input
           type="email"

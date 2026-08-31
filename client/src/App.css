@@ -37,9 +37,9 @@ body,
   --text-muted: #626d82;
 
   /* ---- brand: indigo/violet instead of stock blue ---- */
-  --primary: #5b6ee8;
-  --primary-hover: #4959d4;
-  --primary-light: #8b93f2;
+  --primary: #27e701;
+  --primary-hover: #2dc92f;
+  --primary-light: #1dd900;
   --primary-soft: rgba(91, 110, 232, 0.14);
   --accent: #a855f7;
 
@@ -52,7 +52,7 @@ body,
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
-  --space-5: 20px;
+  --space-5: 15px;
   --space-6: 24px;
   --space-8: 32px;
 
@@ -112,7 +112,7 @@ body {
   display: flex;
   overflow: hidden;
   background:
-    radial-gradient(circle at 15% 0%, rgba(91, 110, 232, 0.09), transparent 40%),
+    radial-gradient(circle at 15% 0%, rgba(0, 0, 0, 0.09), transparent 40%),
     radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05), transparent 45%),
     var(--bg-main);
 }
@@ -1113,7 +1113,7 @@ button {
 
   background:
     radial-gradient(circle at 18% 20%, rgba(91, 110, 232, 0.16), transparent 38%),
-    radial-gradient(circle at 82% 80%, rgba(168, 85, 247, 0.11), transparent 38%),
+    radial-gradient(circle at 82% 80%, rgba(0, 0, 0, 0.11), transparent 38%),
     var(--bg-main);
 }
 
@@ -1121,7 +1121,7 @@ button {
   width: min(390px, 100%);
   padding: var(--space-8);
 
-  background: rgba(20, 24, 38, 0.92);
+  background: rgba(7, 7, 7, 0.92);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
 
