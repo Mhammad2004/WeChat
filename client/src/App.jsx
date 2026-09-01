@@ -498,7 +498,10 @@ function App() {
 
 
   return (
-    <div className="app">
+    <div
+      className={`app ${selectedUser || selectedGroup ? "chat-open" : ""
+        }`}
+    >
 
       <Sidebar
         user={user}
@@ -529,6 +532,11 @@ function App() {
         user={user}
         selectedUser={selectedUser}
         selectedGroup={selectedGroup}
+        onBack={() => {
+          setSelectedUser(null);
+          setSelectedGroup(null);
+          setMessages([]);
+        }}
       />
 
     </div>

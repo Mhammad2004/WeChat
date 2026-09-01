@@ -509,10 +509,6 @@ function Sidebar({
 
   return (
     <aside className="sidebar">
-
-
-
-
       {/* HEADER */}
 
       <div className="sidebar-header">

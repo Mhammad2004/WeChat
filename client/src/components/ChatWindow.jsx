@@ -10,6 +10,7 @@ function ChatWindow({
   user,
   selectedUser,
   selectedGroup,
+  onBack
 }) {
   console.log("Selected group:", selectedGroup);
   // ==========================================
@@ -62,6 +63,13 @@ function ChatWindow({
       ====================================== */}
 
       <header className="chat-header">
+        <button
+          className="back-button"
+          onClick={onBack}
+          aria-label="Back to conversations"
+        >
+          ←
+        </button>
         {isGroup && (
           <button
             onClick={() => setShowGroupDetails(true)}
@@ -133,7 +141,7 @@ function ChatWindow({
               socket={socket}
 
               isGroup={isGroup}
-              
+
               isAdmin={
                 isGroup &&
                 Number(user.id) ===
